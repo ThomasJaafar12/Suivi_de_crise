@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page_title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <style>
+    :root {
+      --bg: #f2f5f8;
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-strong: rgba(255, 255, 255, 0.98);
+      --text: #142236;
+      --muted: #62728a;
+      --line: rgba(20, 34, 54, 0.12);
+      --primary: #102a43;
+      --accent: #1f7a8c;
+      --accent-2: #ff7a59;
+      --positive: #0f8b5f;
+      --negative: #c84545;
+      --soft-positive: #d7f4e7;
+      --soft-negative: #fee4e2;
+      --chip: rgba(16, 42, 67, 0.06);
+      --shadow: 0 28px 90px rgba(16, 42, 67, 0.10);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Manrope", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 122, 89, 0.10), transparent 25%),
+        radial-gradient(circle at right 10% top 12%, rgba(31, 122, 140, 0.14), transparent 24%),
+        linear-gradient(180deg, #f8fbfd 0%, #eef3f7 100%);
+    }
+
+    body {
+      padding: 22px;
+    }
+
+    .app-window {
+      width: min(1680px, 100%);
+      margin: 0 auto;
+      background: rgba(248, 251, 253, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(22px);
+    }
+
+    .window-bar {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(245,248,252,0.7));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .window-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .window-pill {
+      width: 13px;
+      height: 13px;
+      border-radius: 999px;
+      background: #d9e3ed;
+      box-shadow: inset 0 0 0 1px rgba(20, 34, 54, 0.08);
+    }
+
+    .window-pill.accent { background: #ff7a59; }
+    .window-pill.alt { background: #1f7a8c; }
+
+    .browser-strip {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+
+    .browser-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(16, 42, 67, 0.09);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .address-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .address-text {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .window-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .app-body {
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(360px, 0.9fr);
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 18px 70px rgba(16, 42, 67, 0.07);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero-main {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      inset: auto -5% -18% auto;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 122, 89, 0.22), transparent 72%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(16, 42, 67, 0.08);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 10px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(34px, 4vw, 60px);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+      max-width: 14ch;
+    }
+
+    .hero-copy {
+      max-width: 62ch;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .hero-side {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 20px;
+    }
+
+    .meta-card {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      min-height: 128px;
+    }
+
+    .meta-label {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .meta-value {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .sticky-shell {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: grid;
+      gap: 12px;
+    }
+
+    .selector-shell {
+      padding: 16px;
+    }
+
+    .selector-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid var(--line);
+      min-width: 0;
+    }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .field select,
+    .field input {
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .field.checkbox {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .field.checkbox label {
+      margin: 0;
+    }
+
+    .selector-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--chip);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .button {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.84);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .nav-shell {
+      padding: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .nav-tab,
+    .subtab,
+    .toggle-pill,
+    .metric-pill {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    }
+
+    .nav-tab:hover,
+    .subtab:hover,
+    .toggle-pill:hover,
+    .metric-pill:hover {
+      transform: translateY(-1px);
+    }
+
+    .nav-tab.is-active,
+    .subtab.is-active,
+    .toggle-pill.is-active,
+    .metric-pill.is-active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .content-shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .tab-panel {
+      display: grid;
+      gap: 16px;
+    }
+
+    .subtab-shell,
+    .toolbar-shell {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 16px;
+    }
+
+    .grid-three {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-four {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card-panel {
+      padding: 18px;
+      min-height: 180px;
+    }
+
+    .hero-kpis {
+      padding: 18px;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title h2,
+    .panel-title h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .panel-title p,
+    .panel-title span {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .kpi-card {
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.86);
+      min-height: 156px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .kpi-card.hero {
+      background: linear-gradient(180deg, rgba(16,42,67,0.96), rgba(31,122,140,0.92));
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 800;
+      opacity: 0.82;
+    }
+
+    .kpi-value {
+      font-size: clamp(24px, 2.6vw, 44px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .kpi-delta {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .delta-positive { color: var(--positive); }
+    .delta-negative { color: var(--negative); }
+    .kpi-card.hero .delta-positive,
+    .kpi-card.hero .delta-negative { color: rgba(255,255,255,0.92); }
+
+    .chart {
+      width: 100%;
+      min-height: 320px;
+    }
+
+    .chart.big {
+      min-height: 430px;
+    }
+
+    .chart.map {
+      min-height: 460px;
+    }
+
+    .summary-copy {
+      display: grid;
+      gap: 14px;
+    }
+
+    .summary-lede {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .summary-copy p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .insight-list,
+    .note-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .insight-card,
+    .note-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.86);
+    }
+
+    .insight-card strong,
+    .note-card strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .insight-card p,
+    .note-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .ranking-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .ranking-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .ranking-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.84);
+      border: 1px solid var(--line);
+    }
+
+    .ranking-item strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .ranking-item span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .ranking-item .value {
+      font-weight: 800;
+      font-size: 14px;
+      text-align: right;
+    }
+
+    .banner {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 122, 89, 0.10);
+      border: 1px solid rgba(255, 122, 89, 0.18);
+      color: #9b4a33;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .banner.is-visible {
+      display: block;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      text-align: right;
+      font-size: 12px;
+      padding: 0 6px 4px;
+    }
+
+    @media (max-width: 1280px) {
+      .selector-grid,
+      .grid-four,
+      .grid-three,
+      .grid-two,
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 10px; }
+      .app-body { padding: 12px; }
+      .window-bar { grid-template-columns: 1fr; }
+      .hero-main, .hero-side, .selector-shell, .card-panel, .hero-kpis { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <script id="payload-data" type="application/json">{{ payload_json | safe }}</script>
+  <div class="app-window">
+    <div class="window-bar">
+      <div class="window-actions">
+        <span class="window-pill accent"></span>
+        <span class="window-pill alt"></span>
+        <span class="window-pill"></span>
+      </div>
+      <div class="browser-strip">
+        <div class="browser-tab">Bilan premium moderne</div>
+        <div class="address-bar">
+          <span>⌂</span>
+          <div class="address-text" id="address-text"></div>
+        </div>
+      </div>
+      <div class="window-meta">
+        <span id="window-period"></span>
+      </div>
+    </div>
+
+    <div class="app-body">
+      <section class="hero-grid">
+        <article class="panel hero-main">
+          <div class="eyebrow">Windows-like navigator · premium moderne</div>
+          <h1 id="hero-title"></h1>
+          <p class="hero-copy" id="hero-copy"></p>
+        </article>
+        <aside class="panel hero-side" id="hero-side"></aside>
+      </section>
+
+      <div class="sticky-shell">
+        <section class="panel selector-shell">
+          <div class="selector-grid" id="selector-grid"></div>
+          <div class="selector-footer">
+            <div class="chip-row" id="active-filters"></div>
+            <button class="button" type="button" id="reset-filters">Réinitialiser les filtres</button>
+          </div>
+        </section>
+
+        <section class="panel nav-shell" id="primary-tabs"></section>
+      </div>
+
+      <main class="content-shell" id="content-root"></main>
+      <div class="footer-note">HTML standalone. Les données métier et la géométrie cartographique sont embarquées. Les bibliothèques de visualisation sont chargées via CDN.</div>
+    </div>
+  </div>
+
+  <datalist id="nace-options"></datalist>
+  <datalist id="ape-options"></datalist>
+
+  <script>
+    const payload = JSON.parse(document.getElementById("payload-data").textContent);
+    const managementFacts = payload.facts.management.rows.map((row) =>
+      Object.fromEntries(payload.facts.management.columns.map((column, index) => [column, row[index]]))
+    );
+    const geoFacts = payload.facts.geography.rows.map((row) =>
+      Object.fromEntries(payload.facts.geography.columns.map((column, index) => [column, row[index]]))
+    );
+
+    const state = {
+      activeTab: payload.meta.default_tab,
+      bilanSubtab: payload.meta.default_bilan_subtab,
+      metric: payload.meta.default_metric,
+      year: payload.meta.latest_year,
+      periodMode: payload.meta.partial_latest_year ? "ytd" : "full",
+      geoLevel: "region",
+      category: payload.meta.filters.default_category,
+      plan: payload.meta.filters.default_plan,
+      codeCnrj: payload.meta.filters.default_code_cnrj,
+      sector: payload.meta.filters.default_sector,
+      nace: payload.meta.filters.default_nace,
+      ape: payload.meta.filters.default_ape,
+      includeOther: payload.meta.filters.default_include_other,
+      contributionDimension: "sector",
+      regionSource: "geographic"
+    };
+
+    const cache = new Map();
+    const metricOrder = payload.meta.metric_tabs.map((item) => item.key);
+    const naceOptions = payload.meta.filters.nace_options;
+    const apeOptions = payload.meta.filters.ape_options;
+
+    function initChrome() {
+      document.getElementById("hero-title").textContent = payload.meta.title;
+      document.getElementById("hero-copy").textContent =
+        "Le shell reprend l’esprit des vues Excel tout en basculant sur une lecture applicative: bilan narratif, onglets métriques, treemap de contribution à l’évolution et sélecteurs globaux pilotés par les dimensions métier.";
+      document.getElementById("address-text").textContent = payload.meta.source;
+      updateWindowPeriod();
+      renderHeroSide();
+      populateDatalists();
+      bindReset();
+      renderSelectors();
+      renderPrimaryTabs();
+      renderApp();
+    }
+
+    function updateWindowPeriod() {
+      document.getElementById("window-period").textContent =
+        state.periodMode === "ytd"
+          ? `Fenêtre active · ${state.year} à fin ${payload.meta.month_cutoff_label}`
+          : `Fenêtre active · ${state.year} année complète`;
+    }
+
+    function renderHeroSide() {
+      const side = document.getElementById("hero-side");
+      const comparisonYear = getComparisonYear();
+      side.innerHTML = "";
+      [
+        ["Source", payload.meta.source],
+        ["Période max", `${payload.meta.latest_year} à fin ${payload.meta.month_cutoff_label}`],
+        ["Comparaison", `${state.year} vs ${comparisonYear}`],
+        ["Qualité carto", `${Math.round(payload.meta.geo_quality.department_coverage_ratio * 100)} % départements appariés`],
+      ].forEach(([label, value]) => {
+        const block = document.createElement("div");
+        block.className = "meta-card";
+        block.innerHTML = `<div class="meta-label">${label}</div><div class="meta-value">${value}</div>`;
+        side.appendChild(block);
+      });
+    }
+
+    function populateDatalists() {
+      const naceList = document.getElementById("nace-options");
+      naceList.innerHTML = "";
+      naceOptions.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item.label;
+        naceList.appendChild(option);
+      });
+
+      const apeList = document.getElementById("ape-options");
+      apeList.innerHTML = "";
+      apeOptions.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = `${item.code} · ${item.label}`;
+        apeList.appendChild(option);
+      });
+    }
+
+    function bindReset() {
+      document.getElementById("reset-filters").addEventListener("click", () => {
+        state.year = payload.meta.latest_year;
+        state.periodMode = payload.meta.partial_latest_year ? "ytd" : "full";
+        state.geoLevel = "region";
+        state.category = payload.meta.filters.default_category;
+        state.plan = payload.meta.filters.default_plan;
+        state.codeCnrj = payload.meta.filters.default_code_cnrj;
+        state.sector = payload.meta.filters.default_sector;
+        state.nace = payload.meta.filters.default_nace;
+        state.ape = payload.meta.filters.default_ape;
+        state.includeOther = payload.meta.filters.default_include_other;
+        state.contributionDimension = "sector";
+        state.regionSource = "geographic";
+        renderApp();
+      });
+    }
+
+    function renderSelectors() {
+      const grid = document.getElementById("selector-grid");
+      grid.innerHTML = "";
+      addSelectField(grid, "Année", payload.meta.available_years, state.year, (value) => {
+        state.year = Number(value);
+        renderApp();
+      });
+      addSelectField(
+        grid,
+        "Période",
+        payload.meta.filters.period_modes.map((item) => ({ value: item.key, label: item.label })),
+        state.periodMode,
+        (value) => {
+          state.periodMode = value;
+          renderApp();
+        }
+      );
+      addSelectField(grid, "Niveau géographique", payload.meta.filters.geo_levels.map((item) => ({ value: item.key, label: item.label })), state.geoLevel, (value) => {
+        state.geoLevel = value;
+        renderApp();
+      });
+      addSelectField(grid, "Catégorie", [payload.meta.filters.default_category].concat(payload.meta.filters.categories), state.category, (value) => {
+        state.category = value;
+        renderApp();
+      });
+      addSelectField(grid, "Plan / DPA", [payload.meta.filters.default_plan].concat(payload.meta.filters.plans), state.plan, (value) => {
+        state.plan = value;
+        renderApp();
+      });
+      addSelectField(grid, "Code CNRJ", [payload.meta.filters.default_code_cnrj].concat(payload.meta.filters.code_cnrj), state.codeCnrj, (value) => {
+        state.codeCnrj = value;
+        renderApp();
+      });
+      addSelectField(grid, "Secteur", [payload.meta.filters.default_sector].concat(payload.meta.filters.sectors), state.sector, (value) => {
+        state.sector = value;
+        renderApp();
+      });
+      addInputField(grid, "Nace 88", state.nace === payload.meta.filters.default_nace ? "" : state.nace, "nace-options", (value) => {
+        state.nace = value || payload.meta.filters.default_nace;
+        renderApp();
+      });
+      addInputField(grid, "APE", state.ape, "ape-options", (value) => {
+        state.ape = value;
+        renderApp();
+      });
+      addCheckboxField(grid, "Inclure Autre non ciblé CNRJ", state.includeOther, (checked) => {
+        state.includeOther = checked;
+        renderApp();
+      });
+      renderActiveFilters();
+    }
+
+    function addSelectField(container, label, options, selected, onChange) {
+      const field = document.createElement("div");
+      field.className = "field";
+      const labelNode = document.createElement("label");
+      labelNode.textContent = label;
+      const select = document.createElement("select");
+      options.forEach((option) => {
+        const node = document.createElement("option");
+        if (typeof option === "object") {
+          node.value = option.value;
+          node.textContent = option.label;
+        } else {
+          node.value = option;
+          node.textContent = option;
+        }
+        node.selected = String(node.value) === String(selected);
+        select.appendChild(node);
+      });
+      select.addEventListener("change", (event) => onChange(event.target.value));
+      field.appendChild(labelNode);
+      field.appendChild(select);
+      container.appendChild(field);
+    }
+
+    function addInputField(container, label, value, listId, onChange) {
+      const field = document.createElement("div");
+      field.className = "field";
+      const labelNode = document.createElement("label");
+      labelNode.textContent = label;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = value;
+      input.setAttribute("list", listId);
+      input.placeholder = label === "APE" ? "Rechercher un code ou libellé" : "Rechercher un libellé";
+      input.addEventListener("change", (event) => onChange(event.target.value.trim()));
+      field.appendChild(labelNode);
+      field.appendChild(input);
+      container.appendChild(field);
+    }
+
+    function addCheckboxField(container, label, checked, onChange) {
+      const field = document.createElement("div");
+      field.className = "field checkbox";
+      const labelNode = document.createElement("label");
+      labelNode.textContent = label;
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = checked;
+      input.addEventListener("change", () => onChange(input.checked));
+      field.appendChild(labelNode);
+      field.appendChild(input);
+      container.appendChild(field);
+    }
+
+    function renderActiveFilters() {
+      const container = document.getElementById("active-filters");
+      container.innerHTML = "";
+      const chips = [
+        `${state.year} · ${state.periodMode === "ytd" ? `YTD ${payload.meta.month_cutoff_label}` : "Année complète"}`,
+        state.category !== payload.meta.filters.default_category ? `Catégorie: ${state.category}` : null,
+        state.plan !== payload.meta.filters.default_plan ? `Plan/DPA: ${state.plan}` : null,
+        state.codeCnrj !== payload.meta.filters.default_code_cnrj ? `Code CNRJ: ${state.codeCnrj}` : null,
+        state.sector !== payload.meta.filters.default_sector ? `Secteur: ${state.sector}` : null,
+        state.nace !== payload.meta.filters.default_nace ? `Nace 88: ${state.nace}` : null,
+        state.ape ? `APE: ${state.ape}` : null,
+        !state.includeOther ? "Autre non ciblé exclu" : null,
+      ].filter(Boolean);
+      chips.forEach((text) => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = text;
+        container.appendChild(chip);
+      });
+    }
+
+    function renderPrimaryTabs() {
+      const tabs = document.getElementById("primary-tabs");
+      tabs.innerHTML = "";
+      const bilan = document.createElement("button");
+      bilan.className = `nav-tab${state.activeTab === "bilan" ? " is-active" : ""}`;
+      bilan.textContent = "Bilan";
+      bilan.addEventListener("click", () => {
+        state.activeTab = "bilan";
+        renderApp();
+      });
+      tabs.appendChild(bilan);
+
+      payload.meta.metric_tabs.forEach((tab) => {
+        const button = document.createElement("button");
+        button.className = `nav-tab${state.activeTab === tab.key ? " is-active" : ""}`;
+        button.textContent = tab.label;
+        button.addEventListener("click", () => {
+          state.activeTab = tab.key;
+          state.metric = tab.key;
+          renderApp();
+        });
+        tabs.appendChild(button);
+      });
+    }
+
+    function renderApp() {
+      cache.clear();
+      updateWindowPeriod();
+      renderHeroSide();
+      renderSelectors();
+      renderPrimaryTabs();
+      const root = document.getElementById("content-root");
+      root.innerHTML = "";
+      if (state.activeTab === "bilan") {
+        renderBilan(root);
+      } else {
+        renderMetricView(root, state.activeTab);
+      }
+    }
+
+    function renderBilan(root) {
+      const panel = document.createElement("section");
+      panel.className = "tab-panel";
+      panel.innerHTML = `
+        <section class="panel subtab-shell">
+          <div class="toolbar-left" id="bilan-subtabs"></div>
+          <div class="toolbar-right" id="bilan-metric-switch"></div>
+        </section>
+        <div id="bilan-content"></div>
+      `;
+      root.appendChild(panel);
+
+      const subtabs = document.getElementById("bilan-subtabs");
+      payload.meta.bilan_subtabs.forEach((tab) => {
+        const button = document.createElement("button");
+        button.className = `subtab${state.bilanSubtab === tab.key ? " is-active" : ""}`;
+        button.textContent = tab.label;
+        button.addEventListener("click", () => {
+          state.bilanSubtab = tab.key;
+          renderApp();
+        });
+        subtabs.appendChild(button);
+      });
+
+      const metricSwitch = document.getElementById("bilan-metric-switch");
+      payload.meta.metric_tabs.forEach((tab) => {
+        const button = document.createElement("button");
+        button.className = `metric-pill${state.metric === tab.key ? " is-active" : ""}`;
+        button.textContent = tab.label;
+        button.addEventListener("click", () => {
+          state.metric = tab.key;
+          renderApp();
+        });
+        metricSwitch.appendChild(button);
+      });
+
+      const content = document.getElementById("bilan-content");
+      if (state.bilanSubtab === "overview") {
+        renderBilanOverview(content);
+      } else if (state.bilanSubtab === "contribution") {
+        renderBilanContribution(content);
+      } else if (state.bilanSubtab === "geography") {
+        renderBilanGeography(content);
+      } else {
+        renderBilanMethod(content);
+      }
+    }
+
+    function renderMetricView(root, metricKey) {
+      const kpis = buildKpiMetrics();
+      const container = document.createElement("section");
+      container.className = "tab-panel";
+      container.innerHTML = `
+        <section class="panel hero-kpis">
+          <div class="panel-title">
+            <div>
+              <h2>${payload.meta.metric_labels[metricKey]}</h2>
+              <p>${buildScopeLabel()}</p>
+            </div>
+            <span>Onglet métrique</span>
+          </div>
+          <div class="grid-four" id="metric-kpis"></div>
+        </section>
+        <section class="grid-two">
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Trajectoire mensuelle</h3>
+                <p>Comparaison multi-années selon les filtres actifs</p>
+              </div>
+            </div>
+            <div class="chart" id="metric-timeseries"></div>
+          </article>
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Treemap sectorielle</h3>
+                <p>Répartition actuelle de la métrique par secteur</p>
+              </div>
+            </div>
+            <div class="chart" id="metric-sector-treemap"></div>
+          </article>
+        </section>
+        <section class="grid-two">
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Carte géographique</h3>
+                <p>${state.geoLevel === "region" ? "Lecture régionale" : "Lecture départementale"}</p>
+              </div>
+            </div>
+            <div class="chart map" id="metric-map"></div>
+            <div class="banner" id="metric-geo-banner"></div>
+          </article>
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Ranking géographique</h3>
+                <p>Classement piloté par la métrique active</p>
+              </div>
+            </div>
+            <div class="ranking-list" id="metric-ranking"></div>
+          </article>
+        </section>
+      `;
+      root.appendChild(container);
+
+      renderKpiGrid("metric-kpis", kpis, metricKey);
+      renderTimeseries("metric-timeseries", metricKey);
+      renderCurrentDistributionTreemap("metric-sector-treemap", metricKey);
+      renderMap("metric-map", metricKey, "metric-geo-banner");
+      renderGeographicRanking("metric-ranking", metricKey);
+    }
+
+    function renderBilanOverview(container) {
+      const metrics = buildKpiMetrics();
+      container.innerHTML = `
+        <section class="panel hero-kpis">
+          <div class="panel-title">
+            <div>
+              <h2>Vue d’ensemble</h2>
+              <p>${buildScopeLabel()}</p>
+            </div>
+            <span>Métrique de synthèse: ${payload.meta.metric_labels[getActiveMetric()]}</span>
+          </div>
+          <div class="grid-four" id="overview-kpis"></div>
+        </section>
+        <section class="grid-two">
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Courbe multi-années</h3>
+                <p>Lecture ${state.periodMode === "ytd" ? "YTD" : "annuelle"} sur les filtres actifs</p>
+              </div>
+            </div>
+            <div class="chart" id="overview-timeseries"></div>
+          </article>
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Résumé exécutif</h3>
+                <p>Lecture rapide du bilan</p>
+              </div>
+            </div>
+            <div class="summary-copy" id="overview-summary"></div>
+          </article>
+        </section>
+        <section class="grid-two">
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Aperçu contribution à l’évolution</h3>
+                <p>Ventilation ${contributionLabel()}</p>
+              </div>
+            </div>
+            <div class="chart big" id="overview-contribution"></div>
+          </article>
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Treemap sectorielle</h3>
+                <p>Poids courant des secteurs</p>
+              </div>
+            </div>
+            <div class="chart" id="overview-sector"></div>
+          </article>
+        </section>
+      `;
+      renderKpiGrid("overview-kpis", metrics, getActiveMetric());
+      renderTimeseries("overview-timeseries", getActiveMetric());
+      renderContributionTreemap("overview-contribution", getActiveMetric(), true);
+      renderCurrentDistributionTreemap("overview-sector", getActiveMetric());
+      renderOverviewSummary("overview-summary", metrics);
+    }
+
+    function renderBilanContribution(container) {
+      container.innerHTML = `
+        <section class="panel toolbar-shell">
+          <div class="toolbar-left" id="contribution-dimension-switch"></div>
+          <div class="toolbar-right" id="contribution-region-switch"></div>
+        </section>
+        <section class="grid-two">
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Treemap de contribution à l’évolution</h3>
+                <p>${payload.meta.metric_labels[getActiveMetric()]} · période filtrée vs N-1</p>
+              </div>
+            </div>
+            <div class="chart big" id="contribution-main-chart"></div>
+          </article>
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Top contributeurs</h3>
+                <p>Gains et pertes les plus structurants</p>
+              </div>
+            </div>
+            <div class="ranking-columns">
+              <div>
+                <div class="meta-label">Contributeurs positifs</div>
+                <div class="ranking-list" id="positive-contributors"></div>
+              </div>
+              <div>
+                <div class="meta-label">Contributeurs négatifs</div>
+                <div class="ranking-list" id="negative-contributors"></div>
+              </div>
+            </div>
+          </article>
+        </section>
+      `;
+
+      const dimensionSwitch = document.getElementById("contribution-dimension-switch");
+      payload.meta.contribution_dimensions.forEach((item) => {
+        const button = document.createElement("button");
+        button.className = `toggle-pill${state.contributionDimension === item.key ? " is-active" : ""}`;
+        button.textContent = item.label;
+        button.addEventListener("click", () => {
+          state.contributionDimension = item.key;
+          renderApp();
+        });
+        dimensionSwitch.appendChild(button);
+      });
+
+      const regionSwitch = document.getElementById("contribution-region-switch");
+      if (state.contributionDimension === "region") {
+        payload.meta.region_sources.forEach((item) => {
+          const button = document.createElement("button");
+          button.className = `toggle-pill${state.regionSource === item.key ? " is-active" : ""}`;
+          button.textContent = item.label;
+          button.addEventListener("click", () => {
+            state.regionSource = item.key;
+            renderApp();
+          });
+          regionSwitch.appendChild(button);
+        });
+      }
+
+      const rows = buildContributionRows(getActiveMetric(), state.contributionDimension, state.regionSource);
+      renderContributionTreemap("contribution-main-chart", getActiveMetric(), false);
+      renderContributionRankings(rows);
+    }
+
+    function renderBilanGeography(container) {
+      container.innerHTML = `
+        <section class="grid-two">
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Carte géographique</h3>
+                <p>${state.geoLevel === "region" ? "Lecture régionale" : "Lecture départementale"} · ${payload.meta.metric_labels[getActiveMetric()]}</p>
+              </div>
+            </div>
+            <div class="chart map" id="bilan-map"></div>
+            <div class="banner" id="bilan-geo-banner"></div>
+          </article>
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Ranking géographique</h3>
+                <p>Trié par ${payload.meta.metric_labels[getActiveMetric()].toLowerCase()}</p>
+              </div>
+            </div>
+            <div class="ranking-list" id="bilan-geo-ranking"></div>
+          </article>
+        </section>
+      `;
+      renderMap("bilan-map", getActiveMetric(), "bilan-geo-banner");
+      renderGeographicRanking("bilan-geo-ranking", getActiveMetric());
+    }
+
+    function renderBilanMethod(container) {
+      container.innerHTML = `
+        <section class="grid-two">
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Méthode</h3>
+                <p>Définitions et conventions de lecture</p>
+              </div>
+            </div>
+            <div class="note-list" id="method-notes"></div>
+          </article>
+          <article class="panel card-panel">
+            <div class="panel-title">
+              <div>
+                <h3>Définition de la contribution</h3>
+                <p>Comment lire la treemap bilan</p>
+              </div>
+            </div>
+            <div class="note-list">
+              <div class="note-card">
+                <strong>Période de comparaison</strong>
+                <p>La contribution compare la période filtrée courante à la même période en N-1. En mode YTD, la borne mensuelle retenue est celle de la dernière année partielle.</p>
+              </div>
+              <div class="note-card">
+                <strong>Mesure utilisée</strong>
+                <p>La taille des rectangles est calculée sur la valeur absolue du delta de la métrique active. La couleur encode le signe du delta afin de rendre visibles gains et pertes dans un même espace.</p>
+              </div>
+              <div class="note-card">
+                <strong>Métriques de ratio</strong>
+                <p>Pour la durée moyenne et le ticket moyen, la contribution est calculée à partir du delta de la métrique agrégée par ventilation. Aucune décomposition économétrique plus avancée n’est appliquée dans cette version.</p>
+              </div>
+            </div>
+          </article>
+        </section>
+      `;
+      const notes = document.getElementById("method-notes");
+      payload.notes.forEach((note) => {
+        const card = document.createElement("div");
+        card.className = "note-card";
+        card.innerHTML = `<strong>${note.title}</strong><p>${note.body}</p>`;
+        notes.appendChild(card);
+      });
+    }
+
+    function buildScopeLabel() {
+      return `${state.year} · ${state.periodMode === "ytd" ? `à fin ${payload.meta.month_cutoff_label}` : "année complète"} · ${state.sector}`;
+    }
+
+    function getActiveMetric() {
+      return state.activeTab === "bilan" ? state.metric : state.activeTab;
+    }
+
+    function contributionLabel() {
+      const base = payload.meta.contribution_dimensions.find((item) => item.key === state.contributionDimension)?.label || "Secteur";
+      if (state.contributionDimension !== "region") {
+        return base;
+      }
+      const source = payload.meta.region_sources.find((item) => item.key === state.regionSource)?.label || "Région";
+      return `${base} · ${source}`;
+    }
+
+    function getComparisonYear() {
+      const previous = payload.meta.available_years.filter((year) => year < state.year).slice(-1)[0];
+      return previous ?? state.year;
+    }
+
+    function getPeriodLimit(year) {
+      if (state.periodMode === "ytd") {
+        return payload.meta.month_cutoff;
+      }
+      if (year === payload.meta.latest_year && payload.meta.partial_latest_year) {
+        return payload.meta.latest_month;
+      }
+      return 12;
+    }
+
+    function makeCacheKey(prefix, extra) {
+      return [
+        prefix,
+        state.year,
+        state.periodMode,
+        state.category,
+        state.plan,
+        state.codeCnrj,
+        state.sector,
+        state.nace,
+        state.ape,
+        state.includeOther,
+        state.geoLevel,
+        extra || ""
+      ].join("|");
+    }
+
+    function getFilteredManagementFacts(years = null) {
+      const cacheKey = makeCacheKey("management", JSON.stringify(years || []));
+      if (cache.has(cacheKey)) return cache.get(cacheKey);
+      const periodYears = years || payload.meta.available_years;
+      const data = managementFacts.filter((row) => {
+        if (!periodYears.includes(row.y)) return false;
+        if (row.m > getPeriodLimit(row.y)) return false;
+        if (state.category !== payload.meta.filters.default_category && row.cat !== state.category) return false;
+        if (state.plan !== payload.meta.filters.default_plan && row.plan !== state.plan) return false;
+        if (state.codeCnrj !== payload.meta.filters.default_code_cnrj && row.cnrj !== state.codeCnrj) return false;
+        if (state.sector !== payload.meta.filters.default_sector && row.sect !== state.sector) return false;
+        if (state.nace !== payload.meta.filters.default_nace && row.n88l !== state.nace) return false;
+        if (state.ape && `${row.ape} · ${row.apel}` !== state.ape) return false;
+        if (!state.includeOther && row.sect === "Autre non ciblé CNRJ") return false;
+        return true;
+      });
+      cache.set(cacheKey, data);
+      return data;
+    }
+
+    function getFilteredGeoFacts(years = null) {
+      const cacheKey = makeCacheKey("geo", JSON.stringify(years || []));
+      if (cache.has(cacheKey)) return cache.get(cacheKey);
+      const periodYears = years || payload.meta.available_years;
+      const data = geoFacts.filter((row) => {
+        if (!periodYears.includes(row.y)) return false;
+        if (row.m > getPeriodLimit(row.y)) return false;
+        if (state.category !== payload.meta.filters.default_category && row.cat !== state.category) return false;
+        if (state.plan !== payload.meta.filters.default_plan && row.plan !== state.plan) return false;
+        if (state.codeCnrj !== payload.meta.filters.default_code_cnrj && row.cnrj !== state.codeCnrj) return false;
+        if (state.sector !== payload.meta.filters.default_sector && row.sect !== state.sector) return false;
+        if (state.nace !== payload.meta.filters.default_nace && row.n88l !== state.nace) return false;
+        if (!state.includeOther && row.sect === "Autre non ciblé CNRJ") return false;
+        return true;
+      });
+      cache.set(cacheKey, data);
+      return data;
+    }
+
+    function summarizeFacts(records) {
+      return records.reduce((acc, row) => {
+        acc.nb += Number(row.nb || 0);
+        acc.amount += Number(row.amt || 0);
+        acc.durationTotal += Number(row.dur || 0);
+        return acc;
+      }, { nb: 0, amount: 0, durationTotal: 0 });
+    }
+
+    function metricFromBucket(bucket, metric) {
+      if (metric === "nb") return bucket.nb;
+      if (metric === "amount") return bucket.amount;
+      if (metric === "avg_duration") return bucket.nb ? bucket.durationTotal / bucket.nb : 0;
+      if (metric === "avg_ticket") return bucket.nb ? bucket.amount / bucket.nb : 0;
+      return 0;
+    }
+
+    function buildKpiMetrics() {
+      const currentYear = state.year;
+      const comparisonYear = getComparisonYear();
+      const current = summarizeFacts(getFilteredManagementFacts([currentYear]));
+      const previous = summarizeFacts(getFilteredManagementFacts([comparisonYear]));
+      const cards = [
+        {
+          key: "nb",
+          label: payload.meta.metric_labels.nb,
+          value: metricFromBucket(current, "nb"),
+          delta: percentDelta(metricFromBucket(current, "nb"), metricFromBucket(previous, "nb"))
+        },
+        {
+          key: "amount",
+          label: payload.meta.metric_labels.amount,
+          value: metricFromBucket(current, "amount"),
+          delta: percentDelta(metricFromBucket(current, "amount"), metricFromBucket(previous, "amount"))
+        },
+        {
+          key: "avg_duration",
+          label: payload.meta.metric_labels.avg_duration,
+          value: metricFromBucket(current, "avg_duration"),
+          delta: percentDelta(metricFromBucket(current, "avg_duration"), metricFromBucket(previous, "avg_duration"))
+        },
+        {
+          key: "avg_ticket",
+          label: payload.meta.metric_labels.avg_ticket,
+          value: metricFromBucket(current, "avg_ticket"),
+          delta: percentDelta(metricFromBucket(current, "avg_ticket"), metricFromBucket(previous, "avg_ticket"))
+        }
+      ];
+      return {
+        cards,
+        comparisonYear,
+        current,
+        previous
+      };
+    }
+
+    function percentDelta(current, previous) {
+      if (!previous) return 0;
+      return ((current / previous) - 1) * 100;
+    }
+
+    function renderKpiGrid(targetId, metrics, heroMetric) {
+      const target = document.getElementById(targetId);
+      target.innerHTML = "";
+      metrics.cards.forEach((card) => {
+        const node = document.createElement("article");
+        node.className = `kpi-card${card.key === heroMetric ? " hero" : ""}`;
+        const deltaClass = card.delta >= 0 ? "delta-positive" : "delta-negative";
+        node.innerHTML = `
+          <div class="kpi-label">${card.label}</div>
+          <div class="kpi-value">${formatMetric(card.key, card.value)}</div>
+          <div class="kpi-delta ${deltaClass}">${formatDelta(card.delta)} vs ${metrics.comparisonYear}</div>
+        `;
+        target.appendChild(node);
+      });
+    }
+
+    function renderOverviewSummary(targetId, metrics) {
+      const target = document.getElementById(targetId);
+      const currentMetric = getActiveMetric();
+      const contributionRows = buildContributionRows(currentMetric, state.contributionDimension, state.regionSource);
+      const topPositive = contributionRows.filter((row) => row.delta > 0).sort((a, b) => b.delta - a.delta)[0];
+      const topNegative = contributionRows.filter((row) => row.delta < 0).sort((a, b) => a.delta - b.delta)[0];
+      target.innerHTML = `
+        <div class="summary-lede">
+          ${payload.meta.metric_labels[currentMetric]} : ${formatMetric(currentMetric, metrics.cards.find((item) => item.key === currentMetric).value)}
+          sur ${buildScopeLabel()}.
+        </div>
+        <p>${state.periodMode === "ytd" ? `La lecture YTD est arrêtée à fin ${payload.meta.month_cutoff_label}.` : "La lecture porte sur l’année disponible complète."} Le bilan conserve les filtres Excel clés tout en hiérarchisant la contribution des ventilations à l’évolution.</p>
+        <div class="insight-list">
+          <div class="insight-card">
+            <strong>Contributeur positif principal</strong>
+            <p>${topPositive ? `${topPositive.name} avec ${formatMetric(currentMetric, topPositive.delta)} (${topPositive.contribution.toFixed(1).replace(".", ",")} % de la variation).` : "Aucun contributeur positif sur la fenêtre courante."}</p>
+          </div>
+          <div class="insight-card">
+            <strong>Contributeur négatif principal</strong>
+            <p>${topNegative ? `${topNegative.name} avec ${formatMetric(currentMetric, topNegative.delta)} (${topNegative.contribution.toFixed(1).replace(".", ",")} % de la variation).` : "Aucun contributeur négatif sur la fenêtre courante."}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTimeseries(targetId, metricKey) {
+      const facts = getFilteredManagementFacts(payload.meta.available_years);
+      const traces = payload.meta.available_years.map((year) => {
+        const buckets = new Map();
+        facts.forEach((row) => {
+          if (row.y !== year) return;
+          const existing = buckets.get(row.m) || { nb: 0, amount: 0, durationTotal: 0 };
+          existing.nb += Number(row.nb || 0);
+          existing.amount += Number(row.amt || 0);
+          existing.durationTotal += Number(row.dur || 0);
+          buckets.set(row.m, existing);
+        });
+        const limit = getPeriodLimit(year);
+        const months = Array.from({ length: limit }, (_, index) => index + 1);
+        return {
+          type: "scatter",
+          mode: year === state.year ? "lines+markers" : "lines",
+          name: String(year),
+          x: months.map((month) => monthLabel(month)),
+          y: months.map((month) => metricFromBucket(buckets.get(month) || { nb: 0, amount: 0, durationTotal: 0 }, metricKey)),
+          line: {
+            width: year === state.year ? 4 : 2.5,
+            shape: year === state.year ? "spline" : "linear"
+          },
+          fill: year === state.year ? "tozeroy" : undefined
+        };
+      });
+      Plotly.react(targetId, traces, plotlyLayout(metricKey), plotlyConfig());
+    }
+
+    function renderCurrentDistributionTreemap(targetId, metricKey) {
+      const currentFacts = getFilteredManagementFacts([state.year]);
+      const grouped = groupByDimension(currentFacts, "sect", metricKey);
+      const rows = Array.from(grouped.entries())
+        .map(([name, bucket]) => ({ name, value: metricFromBucket(bucket, metricKey) }))
+        .sort((a, b) => b.value - a.value);
+      Plotly.react(targetId, [{
+        type: "treemap",
+        labels: rows.map((row) => row.name),
+        parents: rows.map(() => ""),
+        values: rows.map((row) => Math.max(row.value, 0)),
+        texttemplate: "<b>%{label}</b><br>%{value:,.2f}",
+        marker: { colorscale: [["0", "#d9ecf0"], ["0.5", "#7ab2bf"], ["1", "#102a43"]] },
+        hovertemplate: "%{label}<br>" + payload.meta.metric_labels[metricKey] + ": %{value}<extra></extra>",
+      }], {
+        margin: { l: 0, r: 0, t: 0, b: 0 },
+        paper_bgcolor: "rgba(0,0,0,0)"
+      }, plotlyConfig());
+    }
+
+    function buildContributionRows(metricKey, dimension, regionSource) {
+      const currentYear = state.year;
+      const comparisonYear = getComparisonYear();
+      const useGeo = dimension === "region" && regionSource === "geographic";
+      const facts = useGeo
+        ? getFilteredGeoFacts([currentYear, comparisonYear])
+        : getFilteredManagementFacts([currentYear, comparisonYear]);
+      const field = dimension === "sector" ? "sect" : dimension === "nace" ? "n88l" : (regionSource === "geographic" ? "rgg" : "rgm");
+      const currentBuckets = groupByDimension(facts.filter((row) => row.y === currentYear), field, metricKey);
+      const previousBuckets = groupByDimension(facts.filter((row) => row.y === comparisonYear), field, metricKey);
+      const keys = new Set([...currentBuckets.keys(), ...previousBuckets.keys()]);
+      const rows = Array.from(keys).map((name) => {
+        const current = currentBuckets.get(name) || { nb: 0, amount: 0, durationTotal: 0 };
+        const previous = previousBuckets.get(name) || { nb: 0, amount: 0, durationTotal: 0 };
+        const currentValue = metricFromBucket(current, metricKey);
+        const previousValue = metricFromBucket(previous, metricKey);
+        return {
+          name,
+          current: currentValue,
+          previous: previousValue,
+          delta: currentValue - previousValue,
+        };
+      });
+      const totalDelta = rows.reduce((sum, row) => sum + row.delta, 0);
+      return rows
+        .map((row) => ({
+          ...row,
+          contribution: totalDelta ? (row.delta / totalDelta) * 100 : 0,
+          absDelta: Math.abs(row.delta),
+          sign: row.delta >= 0 ? "positive" : "negative"
+        }))
+        .filter((row) => row.absDelta > 0)
+        .sort((a, b) => b.absDelta - a.absDelta);
+    }
+
+    function renderContributionTreemap(targetId, metricKey, compactMode) {
+      const rows = buildContributionRows(metricKey, state.contributionDimension, state.regionSource);
+      const sourceLabel = contributionLabel();
+      Plotly.react(targetId, [{
+        type: "treemap",
+        labels: rows.map((row) => row.name),
+        parents: rows.map(() => ""),
+        values: rows.map((row) => row.absDelta),
+        texttemplate: compactMode ? "<b>%{label}</b><br>%{value:,.0f}" : "<b>%{label}</b><br>%{customdata[0]}<br>%{customdata[1]} %",
+        marker: {
+          colors: rows.map((row) => row.delta >= 0 ? "#1f7a8c" : "#ff7a59"),
+          line: { width: 1, color: "rgba(255,255,255,0.85)" }
+        },
+        hovertemplate:
+          "%{label}<br>" +
+          "Courant: %{customdata[2]}<br>" +
+          "N-1: %{customdata[3]}<br>" +
+          "Delta: %{customdata[0]}<br>" +
+          "Contribution: %{customdata[1]} %<extra>" + sourceLabel + "</extra>",
+        customdata: rows.map((row) => [
+          formatMetric(metricKey, row.delta),
+          row.contribution.toFixed(1).replace(".", ","),
+          formatMetric(metricKey, row.current),
+          formatMetric(metricKey, row.previous)
+        ])
+      }], {
+        margin: { l: 0, r: 0, t: 0, b: 0 },
+        paper_bgcolor: "rgba(0,0,0,0)"
+      }, plotlyConfig());
+    }
+
+    function renderContributionRankings(rows) {
+      renderRankingList(
+        "positive-contributors",
+        rows.filter((row) => row.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, 6),
+        getActiveMetric(),
+        false
+      );
+      renderRankingList(
+        "negative-contributors",
+        rows.filter((row) => row.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, 6),
+        getActiveMetric(),
+        true
+      );
+    }
+
+    function renderMap(targetId, metricKey, bannerId) {
+      const container = document.getElementById(targetId);
+      const chart = echarts.getInstanceByDom(container) || echarts.init(container, null, { renderer: "canvas" });
+      const geoJson = payload.geojson.departments_display;
+      const facts = getFilteredGeoFacts([state.year]);
+      const grouped = state.geoLevel === "region"
+        ? groupByDimension(facts, "rgg", metricKey)
+        : groupByDimension(facts, "dpt", metricKey);
+
+      echarts.registerMap("crise_departments_premium", geoJson);
+      const mapData = geoJson.features.map((feature) => {
+        const label = state.geoLevel === "region" ? feature.properties.excel_region : feature.properties.excel_department;
+        const bucket = label ? grouped.get(label) : null;
+        return {
+          name: feature.properties.name || feature.properties.nom,
+          value: bucket ? metricFromBucket(bucket, metricKey) : null,
+          labelValue: label || feature.properties.nom
+        };
+      });
+      const values = mapData.map((item) => item.value).filter((value) => value !== null);
+      const max = values.length ? Math.max(...values) : 1;
+
+      chart.setOption({
+        backgroundColor: "transparent",
+        tooltip: {
+          trigger: "item",
+          formatter: (params) => {
+            const value = params.value == null ? "N/A" : formatMetric(metricKey, params.value);
+            return `${params.data.labelValue}<br>${payload.meta.metric_labels[metricKey]}: ${value}`;
+          }
+        },
+        visualMap: {
+          min: 0,
+          max,
+          left: 10,
+          bottom: 10,
+          text: ["Fort", "Faible"],
+          calculable: true,
+          inRange: {
+            color: ["#d7ecf2", "#8cbfcc", "#1f7a8c", "#102a43"]
+          },
+          textStyle: { color: "#62728a" }
+        },
+        series: [{
+          type: "map",
+          map: "crise_departments_premium",
+          roam: true,
+          layoutCenter: ["52%", "50%"],
+          layoutSize: "96%",
+          emphasis: { label: { show: false } },
+          itemStyle: {
+            borderColor: "rgba(255,255,255,0.85)",
+            borderWidth: 0.8
+          },
+          data: mapData
+        }]
+      });
+
+      const banner = document.getElementById(bannerId);
+      if (!banner) return;
+      if (state.ape) {
+        banner.className = "banner is-visible";
+        banner.textContent = "Le filtre APE n’est pas disponible sur la source géographique. La carte et le ranking ignorent donc cette sélection.";
+      } else {
+        banner.className = "banner";
+        banner.textContent = "";
+      }
+    }
+
+    function renderGeographicRanking(targetId, metricKey) {
+      const facts = getFilteredGeoFacts([state.year]);
+      const field = state.geoLevel === "region" ? "rgg" : "dpt";
+      const grouped = groupByDimension(facts, field, metricKey);
+      const rows = Array.from(grouped.entries())
+        .map(([name, bucket]) => ({
+          name,
+          value: metricFromBucket(bucket, metricKey),
+          nb: bucket.nb,
+          avgDuration: bucket.nb ? bucket.durationTotal / bucket.nb : 0
+        }))
+        .filter((row) => !["ETRANGER", "TOM", "NON_IDENTIFIABLE", "Etranger", "Tom"].includes(row.name))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, state.geoLevel === "region" ? 12 : 15);
+      renderRankingList(targetId, rows, metricKey, false);
+    }
+
+    function renderRankingList(targetId, rows, metricKey, invertDelta) {
+      const target = document.getElementById(targetId);
+      target.innerHTML = "";
+      rows.forEach((row, index) => {
+        const item = document.createElement("div");
+        item.className = "ranking-item";
+        const extra = row.contribution !== undefined
+          ? `${row.contribution.toFixed(1).replace(".", ",")} % de contribution`
+          : `${formatMetric("nb", row.nb || 0)} · durée moy. ${formatMetric("avg_duration", row.avgDuration || 0)}`;
+        const value = row.delta !== undefined ? formatMetric(metricKey, row.delta) : formatMetric(metricKey, row.value);
+        item.innerHTML = `
+          <div>
+            <strong>${index + 1}. ${row.name}</strong>
+            <span>${extra}</span>
+          </div>
+          <div class="value">${value}</div>
+        `;
+        target.appendChild(item);
+      });
+    }
+
+    function groupByDimension(records, field, metricKey) {
+      const grouped = new Map();
+      records.forEach((row) => {
+        const key = row[field];
+        if (!key) return;
+        const bucket = grouped.get(key) || { nb: 0, amount: 0, durationTotal: 0 };
+        bucket.nb += Number(row.nb || 0);
+        bucket.amount += Number(row.amt || 0);
+        bucket.durationTotal += Number(row.dur || 0);
+        grouped.set(key, bucket);
+      });
+      return grouped;
+    }
+
+    function formatMetric(metric, value) {
+      if (metric === "nb") {
+        return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(value);
+      }
+      if (metric === "amount") {
+        if (Math.abs(value) >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2).replace(".", ",")} Md€`;
+        if (Math.abs(value) >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(".", ",")} M€`;
+        if (Math.abs(value) >= 1_000) return `${(value / 1_000).toFixed(0).replace(".", ",")} k€`;
+        return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(value)} €`;
+      }
+      if (metric === "avg_duration") {
+        return `${Number(value).toFixed(1).replace(".", ",")} mois`;
+      }
+      if (metric === "avg_ticket") {
+        return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(value)} €`;
+      }
+      return String(value);
+    }
+
+    function formatDelta(value) {
+      const sign = value >= 0 ? "+" : "";
+      return `${sign}${value.toFixed(1).replace(".", ",")} %`;
+    }
+
+    function monthLabel(month) {
+      const labels = {
+        1: "Jan", 2: "Fév", 3: "Mar", 4: "Avr", 5: "Mai", 6: "Juin",
+        7: "Juil", 8: "Août", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Déc"
+      };
+      return labels[month];
+    }
+
+    function plotlyLayout(metricKey) {
+      return {
+        margin: { l: 50, r: 16, t: 10, b: 36 },
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor: "rgba(0,0,0,0)",
+        legend: { orientation: "h", y: 1.12 },
+        xaxis: {
+          showgrid: false,
+          tickfont: { size: 11, color: "#62728a" }
+        },
+        yaxis: {
+          title: payload.meta.metric_labels[metricKey],
+          zeroline: false,
+          gridcolor: "rgba(98,114,138,0.12)"
+        }
+      };
+    }
+
+    function plotlyConfig() {
+      return {
+        displayModeBar: false,
+        responsive: true
+      };
+    }
+
+    initChrome();
+    window.addEventListener("resize", () => {
+      ["metric-map", "bilan-map"].forEach((id) => {
+        const node = document.getElementById(id);
+        if (!node) return;
+        const instance = echarts.getInstanceByDom(node);
+        if (instance) instance.resize();
+      });
+    });
+  </script>
+</body>
+</html>

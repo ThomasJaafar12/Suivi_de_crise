@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crise-viz"
+version = "0.1.0"
+description = "Standalone HTML dataviz generator for the energy crisis delay workbook."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "jinja2>=3.1",
+  "openpyxl>=3.1",
+  "pandas>=2.2",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"crise_viz" = ["templates/*.j2", "assets/geo/*.geojson", "assets/geo/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
